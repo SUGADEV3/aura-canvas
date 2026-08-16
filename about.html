@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — Aura</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#0b0e17;
+    --glass-fill: rgba(255,255,255,0.06);
+    --glass-border: rgba(255,255,255,0.14);
+    --text-hi: #f3f1ff;
+    --text-lo: rgba(243,241,255,0.58);
+    --accent-a:#8b7bff; --accent-b:#f0a6cc; --accent-c:#6fe6d9;
+  }
+  body{
+    background:
+      radial-gradient(circle at 15% 20%, rgba(139,123,255,0.18), transparent 45%),
+      radial-gradient(circle at 85% 75%, rgba(111,230,217,0.14), transparent 45%),
+      var(--bg-0);
+    color:var(--text-hi);
+    font-family:'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    min-height:100vh;
+  }
+  .font-display{ font-family:'Fraunces', serif; }
+  .glass{
+    background:var(--glass-fill);
+    border:1px solid var(--glass-border);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+  }
+</style>
+</head>
+<body>
+<div class="max-w-2xl mx-auto px-6 py-14">
+  <a href="index.html" class="text-xs text-[var(--text-lo)] hover:text-[var(--text-hi)] underline underline-offset-4">← Back to Aura</a>
+
+  <div class="glass rounded-[28px] p-8 sm:p-10 mt-6">
+    <p class="text-xs uppercase tracking-[0.25em] text-[var(--text-lo)] mb-3">About</p>
+    <h1 class="font-display text-3xl sm:text-4xl font-light mb-6">What Aura is, and isn't</h1>
+
+    <div class="space-y-5 text-sm sm:text-[15px] leading-relaxed text-[var(--text-lo)]">
+      <p>
+        Aura is a one-page tool for building a calm, personal visual: a gradient, a line of text, a bit
+        of texture. Blend the colors, drop in a quote, and export the result as an image — for a phone
+        wallpaper, a journal cover, a desktop background, or a quiet corner of a moodboard.
+      </p>
+      <p>
+        It started as a small experiment in making something with no real "output" beyond the way it
+        looks. There's no template library to unlock, no account to make, and no gallery of other
+        people's creations — just a canvas, a handful of controls, and whatever you decide to put on it.
+      </p>
+      <h2 class="font-display text-xl text-[var(--text-hi)] pt-2">How it works</h2>
+      <p>
+        Everything renders in your browser using the HTML canvas — the gradient, blur, grain, and text
+        are all drawn locally on your device. Nothing you create is uploaded anywhere. Downloading or
+        sharing an image happens entirely on your end; the tool has no server component to send it to.
+      </p>
+      <h2 class="font-display text-xl text-[var(--text-hi)] pt-2">Where it's going</h2>
+      <p>
+        The quote list and color presets get small additions over time based on what people reach for
+        most. If there's a palette, font pairing, or feature you'd want to see, the contact link on the
+        home page reaches a real person.
+      </p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

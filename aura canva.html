@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aura — Ambient Canvas Studio</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,450&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#0b0e17;
+    --bg-1:#12162406;
+    --glass-fill: rgba(255,255,255,0.06);
+    --glass-border: rgba(255,255,255,0.14);
+    --text-hi: #f3f1ff;
+    --text-lo: rgba(243,241,255,0.58);
+    --accent-a:#8b7bff;
+    --accent-b:#f0a6cc;
+    --accent-c:#6fe6d9;
+  }
+  html.light{
+    --bg-0:#f6f4fb;
+    --glass-fill: rgba(255,255,255,0.55);
+    --glass-border: rgba(30,20,60,0.10);
+    --text-hi: #1c1730;
+    --text-lo: rgba(28,23,48,0.56);
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg-0);
+    color:var(--text-hi);
+    font-family:'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    transition:background .6s ease, color .6s ease;
+    overflow-x:hidden;
+  }
+  .font-display{ font-family:'Fraunces', serif; }
+  .glass{
+    background:var(--glass-fill);
+    border:1px solid var(--glass-border);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+  }
+  .glass-soft{
+    background:var(--glass-fill);
+    border:1px solid var(--glass-border);
+    backdrop-filter: blur(14px) saturate(130%);
+    -webkit-backdrop-filter: blur(14px) saturate(130%);
+  }
+  /* range input skin */
+  input[type=range]{
+    -webkit-appearance:none; appearance:none;
+    height:4px; border-radius:99px;
+    background:linear-gradient(90deg,var(--accent-a),var(--accent-b));
+    outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none;
+    width:16px;height:16px;border-radius:50%;
+    background:#fff; border:3px solid var(--accent-a);
+    cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.35);
+    transition: transform .15s ease;
+  }
+  input[type=range]::-webkit-slider-thumb:hover{ transform:scale(1.15); }
+  input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;border-radius:50%;
+    background:#fff; border:3px solid var(--accent-a); cursor:pointer;
+  }
+  input[type=color]{
+    -webkit-appearance:none; appearance:none;
+    width:34px; height:34px; border-radius:999px; border:2px solid var(--glass-border);
+    padding:0; background:none; cursor:pointer; overflow:hidden;
+  }
+  input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
+  input[type=color]::-webkit-color-swatch{border:none; border-radius:999px;}
+
+  .pill-btn{
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+  }
+  .pill-btn:hover{ transform: translateY(-2px); }
+  .pill-btn:active{ transform: translateY(0px) scale(.97); }
+
+  #particleLayer{ position:fixed; inset:0; z-index:0; pointer-events:none; }
+
+  .quote-mark{
+    font-family:'Fraunces', serif;
+    font-optical-sizing:auto;
+  }
+
+  ::selection{ background: var(--accent-a); color:#fff; }
+
+  .scrollbar-hide::-webkit-scrollbar{ display:none; }
+
+  @keyframes floatSlow{
+    0%,100%{ transform: translateY(0px) translateX(0px); }
+    50%{ transform: translateY(-10px) translateX(6px); }
+  }
+  .float-slow{ animation: floatSlow 7s ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce){
+    .float-slow{ animation:none; }
+  }
+
+  .tab-active{
+    background:var(--glass-fill);
+    color: var(--text-hi);
+  }
+</style>
+</head>
+<body class="min-h-screen relative">
+
+<canvas id="particleLayer"></canvas>
+
+<div class="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+
+  <!-- ============ HEADER ============ -->
+  <header class="flex items-center justify-between py-6">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-full" style="background:conic-gradient(from 180deg, var(--accent-a), var(--accent-b), var(--accent-c), var(--accent-a));"></div>
+      <span class="font-display text-xl tracking-tight">Aura</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button id="particleToggle" class="pill-btn glass-soft rounded-full px-4 py-2 text-sm text-[var(--text-lo)] hover:text-[var(--text-hi)]">
+        ✦ Particles: <span id="particleState">On</span>
+      </button>
+      <button id="themeToggle" aria-label="Toggle light and dark ambience" class="pill-btn glass-soft rounded-full w-10 h-10 flex items-center justify-center text-lg">
+        <span id="themeIcon">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ AD_SPACE_TOP ============ -->
+  <!-- AD_SPACE_TOP -->
+  <div class="glass-soft rounded-2xl h-[90px] flex items-center justify-center text-xs tracking-widest uppercase text-[var(--text-lo)] mb-8" data-ad-slot="top-leaderboard">
+    Ad space · 728×90
+  </div>
+  <!-- /AD_SPACE_TOP -->
+
+  <!-- ============ HERO ============ -->
+  <section class="text-center mb-10">
+    <p class="uppercase tracking-[0.3em] text-xs text-[var(--text-lo)] mb-3">Ambient Canvas Studio</p>
+    <h1 class="font-display text-4xl sm:text-5xl md:text-6xl font-light tracking-tight leading-[1.05]">
+      Shape a mood.<br>
+      <span style="background:linear-gradient(90deg,var(--accent-a),var(--accent-b),var(--accent-c)); -webkit-background-clip:text; background-clip:text; color:transparent;">Carry it with you.</span>
+    </h1>
+    <p class="text-[var(--text-lo)] mt-4 max-w-lg mx-auto text-[15px]">Blend a gradient, drop in a line worth keeping, and save the moment as an image.</p>
+  </section>
+
+  <!-- ============ MAIN GRID ============ -->
+  <div class="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
+
+    <!-- ---- LEFT: CANVAS + CONTROLS ---- -->
+    <div class="flex flex-col gap-6">
+
+      <!-- Live Canvas -->
+      <div class="glass rounded-[28px] p-3 sm:p-4">
+        <div class="relative rounded-[20px] overflow-hidden" style="aspect-ratio:16/10;">
+          <canvas id="auraCanvas" class="w-full h-full block"></canvas>
+        </div>
+      </div>
+
+      <!-- Controls dock -->
+      <div class="glass rounded-[28px] p-5 sm:p-6">
+
+        <!-- Tabs -->
+        <div class="flex gap-1 glass-soft rounded-full p-1 w-fit mb-6 text-sm">
+          <button data-tab="colors" class="tab-btn tab-active rounded-full px-4 py-1.5 transition-colors">Gradient</button>
+          <button data-tab="text" class="tab-btn rounded-full px-4 py-1.5 text-[var(--text-lo)] transition-colors">Text</button>
+          <button data-tab="fx" class="tab-btn rounded-full px-4 py-1.5 text-[var(--text-lo)] transition-colors">Texture</button>
+        </div>
+
+        <!-- Panel: Colors -->
+        <div id="panel-colors" class="tab-panel grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="flex flex-col items-center gap-2">
+            <input type="color" id="colorA" value="#8b7bff">
+            <span class="text-xs text-[var(--text-lo)]">Stop 1</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <input type="color" id="colorB" value="#f0a6cc">
+            <span class="text-xs text-[var(--text-lo)]">Stop 2</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <input type="color" id="colorC" value="#6fe6d9">
+            <span class="text-xs text-[var(--text-lo)]">Stop 3</span>
+          </div>
+          <div class="col-span-2 sm:col-span-1 flex flex-col justify-center gap-1.5">
+            <label class="text-xs text-[var(--text-lo)]">Angle <span id="angleVal">135°</span></label>
+            <input type="range" id="angle" min="0" max="360" value="135">
+          </div>
+          <div class="col-span-2 sm:col-span-4 flex flex-wrap gap-2 mt-1">
+            <button class="preset-btn text-xs px-3 py-1.5 rounded-full glass-soft hover:opacity-80" data-a="#8b7bff" data-b="#f0a6cc" data-c="#6fe6d9">Dusk</button>
+            <button class="preset-btn text-xs px-3 py-1.5 rounded-full glass-soft hover:opacity-80" data-a="#ff9a76" data-b="#ffd36e" data-c="#ff6f91">Amber</button>
+            <button class="preset-btn text-xs px-3 py-1.5 rounded-full glass-soft hover:opacity-80" data-a="#2dd4bf" data-b="#38bdf8" data-c="#a78bfa">Lagoon</button>
+            <button class="preset-btn text-xs px-3 py-1.5 rounded-full glass-soft hover:opacity-80" data-a="#f472b6" data-b="#818cf8" data-c="#34d399">Bloom</button>
+            <button class="preset-btn text-xs px-3 py-1.5 rounded-full glass-soft hover:opacity-80" data-a="#0f172a" data-b="#334155" data-c="#64748b">Slate</button>
+          </div>
+        </div>
+
+        <!-- Panel: Text -->
+        <div id="panel-text" class="tab-panel hidden">
+          <textarea id="quoteInput" rows="2" maxlength="140" class="w-full bg-transparent border border-[var(--glass-border)] rounded-2xl p-3 text-sm resize-none outline-none focus:border-[var(--accent-a)] placeholder:text-[var(--text-lo)]" placeholder="Type a line worth keeping…">Soft light, slow mornings, an unhurried mind.</textarea>
+          <div class="flex flex-wrap items-center gap-4 mt-4">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-[var(--text-lo)]">Size</span>
+              <input type="range" id="fontSize" min="18" max="56" value="30" class="w-28">
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-[var(--text-lo)]">Color</span>
+              <input type="color" id="textColor" value="#ffffff">
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-[var(--text-lo)]">Align</span>
+              <div class="flex gap-1">
+                <button data-align="left" class="align-btn glass-soft rounded-lg px-2.5 py-1 text-xs">L</button>
+                <button data-align="center" class="align-btn glass-soft rounded-lg px-2.5 py-1 text-xs tab-active">C</button>
+                <button data-align="right" class="align-btn glass-soft rounded-lg px-2.5 py-1 text-xs">R</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel: Texture -->
+        <div id="panel-fx" class="tab-panel hidden grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-[var(--text-lo)]">Blur <span id="blurVal">40px</span></label>
+            <input type="range" id="blur" min="0" max="100" value="40">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-[var(--text-lo)]">Grain <span id="grainVal">18%</span></label>
+            <input type="range" id="grain" min="0" max="60" value="18">
+          </div>
+          <div class="flex items-center gap-3 sm:col-span-2 mt-1">
+            <label class="text-xs text-[var(--text-lo)] flex items-center gap-2">
+              <input type="checkbox" id="cycleToggle" class="accent-[var(--accent-a)]">
+              Ambient color drift
+            </label>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-[var(--glass-border)]">
+          <button id="downloadBtn" class="pill-btn rounded-full px-5 py-2.5 text-sm font-medium text-white shadow-lg" style="background:linear-gradient(90deg,var(--accent-a),var(--accent-b));">
+            ⬇ Download high-res
+          </button>
+          <button id="shareBtn" class="pill-btn glass-soft rounded-full px-5 py-2.5 text-sm">
+            ⤴ Share
+          </button>
+          <span id="shareMsg" class="text-xs text-[var(--text-lo)]"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- RIGHT SIDEBAR ---- -->
+    <aside class="flex flex-col gap-6">
+
+      <!-- Mood Quote Widget -->
+      <div class="glass rounded-[28px] p-6 flex flex-col gap-4">
+        <p class="text-xs uppercase tracking-[0.25em] text-[var(--text-lo)]">Daily mood</p>
+        <p id="quoteText" class="quote-mark text-xl leading-snug font-light">"Stillness is where the good ideas wait."</p>
+        <p id="quoteAuthor" class="text-xs text-[var(--text-lo)]">— Aura</p>
+        <div class="flex gap-2 mt-1">
+          <button id="refreshQuote" class="pill-btn glass-soft rounded-full px-4 py-2 text-xs flex items-center gap-1.5">
+            ↻ New quote
+          </button>
+          <button id="useQuote" class="pill-btn glass-soft rounded-full px-4 py-2 text-xs">
+            Use on canvas
+          </button>
+        </div>
+      </div>
+
+      <!-- AD_SPACE_SIDEBAR -->
+      <!-- AD_SPACE_SIDEBAR -->
+      <div class="glass-soft rounded-2xl h-[250px] flex items-center justify-center text-xs tracking-widest uppercase text-[var(--text-lo)]" data-ad-slot="sidebar-mrec">
+        Ad space · 300×250
+      </div>
+      <!-- /AD_SPACE_SIDEBAR -->
+
+      <!-- Ambient palette preview -->
+      <div class="glass rounded-[28px] p-6">
+        <p class="text-xs uppercase tracking-[0.25em] text-[var(--text-lo)] mb-4">Current palette</p>
+        <div class="flex h-14 rounded-2xl overflow-hidden">
+          <div id="swA" class="flex-1"></div>
+          <div id="swB" class="flex-1"></div>
+          <div id="swC" class="flex-1"></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ============ AD_SPACE_BOTTOM ============ -->
+  <!-- AD_SPACE_BOTTOM -->
+  <div class="glass-soft rounded-2xl h-[90px] flex items-center justify-center text-xs tracking-widest uppercase text-[var(--text-lo)] mt-8" data-ad-slot="bottom-leaderboard">
+    Ad space · 728×90
+  </div>
+  <!-- /AD_SPACE_BOTTOM -->
+
+  <!-- ============ ABOUT ============ -->
+  <section class="glass rounded-[28px] p-6 sm:p-8 mt-8 max-w-3xl mx-auto text-center">
+    <p class="text-xs uppercase tracking-[0.25em] text-[var(--text-lo)] mb-3">About Aura</p>
+    <h2 class="font-display text-2xl font-light mb-3">A small studio for making one nice thing</h2>
+    <p class="text-sm text-[var(--text-lo)] leading-relaxed">
+      Aura is a free browser tool for building a calm, personal visual — pick a gradient, add a line of
+      text, and export it as an image for a phone wallpaper, a journal cover, or a quiet corner of a
+      moodboard. There's no account, no upload, and no tracking of what you make: every gradient is
+      rendered locally in your browser and only leaves your device if you choose to download or share it.
+      New quotes and presets are added occasionally based on what people find themselves reaching for.
+    </p>
+  </section>
+
+  <footer class="text-center text-xs text-[var(--text-lo)] mt-10 flex flex-col items-center gap-2">
+    <div class="flex gap-4">
+      <a href="about.html" class="hover:text-[var(--text-hi)] underline underline-offset-4">About</a>
+      <a href="privacy.html" class="hover:text-[var(--text-hi)] underline underline-offset-4">Privacy Policy</a>
+      <a href="mailto:hello@example.com" class="hover:text-[var(--text-hi)] underline underline-offset-4">Contact</a>
+    </div>
+    <p>Made for slow mornings. No sign-up, nothing saved to a server.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const root = document.documentElement;
+  const state = {
+    colorA:'#8b7bff', colorB:'#f0a6cc', colorC:'#6fe6d9',
+    angle:135, blur:40, grain:18,
+    text:'Soft light, slow mornings, an unhurried mind.',
+    fontSize:30, textColor:'#ffffff', align:'center',
+    particles:true, cycling:false, theme:'dark'
+  };
+
+  /* ---------------- THEME TOGGLE ---------------- */
+  const themeBtn = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+  themeBtn.addEventListener('click', ()=>{
+    root.classList.toggle('light');
+    state.theme = root.classList.contains('light') ? 'light' : 'dark';
+    themeIcon.textContent = state.theme === 'light' ? '☀️' : '🌙';
+    drawCanvas();
+  });
+
+  /* ---------------- TABS ---------------- */
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('tab-active','text-[var(--text-hi)]'));
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.add('text-[var(--text-lo)]'));
+      btn.classList.add('tab-active');
+      btn.classList.remove('text-[var(--text-lo)]');
+      document.querySelectorAll('.tab-panel').forEach(p=>p.classList.add('hidden'));
+      document.getElementById('panel-'+btn.dataset.tab).classList.remove('hidden');
+    });
+  });
+
+  /* ---------------- CANVAS SETUP ---------------- */
+  const canvas = document.getElementById('auraCanvas');
+  const ctx = canvas.getContext('2d');
+  const EXPORT_SCALE = 2; // for high-res export baseline
+
+  function resizeCanvas(){
+    const box = canvas.getBoundingClientRect();
+    canvas.width = box.width * EXPORT_SCALE;
+    canvas.height = box.height * EXPORT_SCALE;
+    drawCanvas();
+  }
+
+  function hexToRgb(hex){
+    const v = parseInt(hex.slice(1),16);
+    return [(v>>16)&255,(v>>8)&255,v&255];
+  }
+
+  function angleToCoords(angleDeg, w, h){
+    const rad = (angleDeg-90) * Math.PI/180;
+    const cx=w/2, cy=h/2;
+    const len = Math.sqrt(w*w+h*h)/2;
+    return {
+      x0: cx - Math.cos(rad)*len, y0: cy - Math.sin(rad)*len,
+      x1: cx + Math.cos(rad)*len, y1: cy + Math.sin(rad)*len
+    };
+  }
+
+  let grainCanvas = document.createElement('canvas');
+  function buildGrain(w,h,amount){
+    grainCanvas.width = w; grainCanvas.height = h;
+    const gctx = grainCanvas.getContext('2d');
+    const imgData = gctx.createImageData(w,h);
+    const alpha = amount*2.2;
+    for(let i=0;i<imgData.data.length;i+=4){
+      const v = Math.random()*255;
+      imgData.data[i]=v; imgData.data[i+1]=v; imgData.data[i+2]=v;
+      imgData.data[i+3]=Math.random()<0.5?alpha:0;
+    }
+    gctx.putImageData(imgData,0,0);
+    return grainCanvas;
+  }
+
+  function wrapText(ctx, text, maxWidth){
+    const words = text.split(' ');
+    const lines = [];
+    let line = '';
+    for(const w of words){
+      const test = line ? line+' '+w : w;
+      if(ctx.measureText(test).width > maxWidth && line){
+        lines.push(line);
+        line = w;
+      } else {
+        line = test;
+      }
+    }
+    if(line) lines.push(line);
+    return lines;
+  }
+
+  function drawCanvas(){
+    const w = canvas.width, h = canvas.height;
+    if(!w || !h) return;
+
+    // base gradient
+    const {x0,y0,x1,y1} = angleToCoords(state.angle, w, h);
+    const grad = ctx.createLinearGradient(x0,y0,x1,y1);
+    grad.addColorStop(0, state.colorA);
+    grad.addColorStop(0.5, state.colorB);
+    grad.addColorStop(1, state.colorC);
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,w,h);
+
+    // soft blurred orbs for depth
+    if(state.blur > 0){
+      ctx.save();
+      ctx.filter = `blur(${(state.blur/100)*Math.min(w,h)*0.18}px)`;
+      const orbs = [
+        {c: state.colorA, x:w*0.2, y:h*0.25, r:w*0.28},
+        {c: state.colorC, x:w*0.8, y:h*0.75, r:w*0.3},
+        {c: state.colorB, x:w*0.5, y:h*0.5, r:w*0.22}
+      ];
+      orbs.forEach(o=>{
+        ctx.globalAlpha = 0.55;
+        const rg = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);
+        rg.addColorStop(0,o.c);
+        rg.addColorStop(1,'transparent');
+        ctx.fillStyle = rg;
+        ctx.fillRect(0,0,w,h);
+      });
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+
+    // grain overlay
+    if(state.grain > 0){
+      const g = buildGrain(Math.floor(w/2), Math.floor(h/2), state.grain);
+      ctx.save();
+      ctx.globalAlpha = 0.9;
+      ctx.drawImage(g,0,0,w,h);
+      ctx.restore();
+    }
+
+    // vignette for legibility
+    const vg = ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.2, w/2,h/2, Math.max(w,h)*0.75);
+    vg.addColorStop(0,'rgba(0,0,0,0)');
+    vg.addColorStop(1,'rgba(0,0,0,0.28)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(0,0,w,h);
+
+    // text
+    if(state.text.trim()){
+      ctx.fillStyle = state.textColor;
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = state.align;
+      const fs = state.fontSize * EXPORT_SCALE;
+      ctx.font = `450 ${fs}px Fraunces, serif`;
+      ctx.shadowColor = 'rgba(0,0,0,0.35)';
+      ctx.shadowBlur = 18;
+      const maxWidth = w*0.78;
+      const lines = wrapText(ctx, state.text, maxWidth);
+      const lineHeight = fs*1.28;
+      const totalH = lineHeight*lines.length;
+      let startY = h/2 - totalH/2 + lineHeight/2;
+      const xPos = state.align==='left' ? w*0.11 : state.align==='right' ? w*0.89 : w/2;
+      lines.forEach((ln,i)=>{
+        ctx.fillText(ln, xPos, startY + i*lineHeight);
+      });
+      ctx.shadowBlur = 0;
+    }
+
+    updateSwatches();
+  }
+
+  function updateSwatches(){
+    document.getElementById('swA').style.background = state.colorA;
+    document.getElementById('swB').style.background = state.colorB;
+    document.getElementById('swC').style.background = state.colorC;
+  }
+
+  /* ---------------- CONTROL BINDINGS ---------------- */
+  const $ = id => document.getElementById(id);
+
+  $('colorA').addEventListener('input', e=>{ state.colorA = e.target.value; drawCanvas(); });
+  $('colorB').addEventListener('input', e=>{ state.colorB = e.target.value; drawCanvas(); });
+  $('colorC').addEventListener('input', e=>{ state.colorC = e.target.value; drawCanvas(); });
+
+  $('angle').addEventListener('input', e=>{
+    state.angle = +e.target.value;
+    $('angleVal').textContent = state.angle+'°';
+    drawCanvas();
+  });
+
+  $('blur').addEventListener('input', e=>{
+    state.blur = +e.target.value;
+    $('blurVal').textContent = state.blur+'px';
+    drawCanvas();
+  });
+
+  $('grain').addEventListener('input', e=>{
+    state.grain = +e.target.value;
+    $('grainVal').textContent = state.grain+'%';
+    drawCanvas();
+  });
+
+  $('quoteInput').addEventListener('input', e=>{ state.text = e.target.value; drawCanvas(); });
+  $('fontSize').addEventListener('input', e=>{ state.fontSize = +e.target.value; drawCanvas(); });
+  $('textColor').addEventListener('input', e=>{ state.textColor = e.target.value; drawCanvas(); });
+
+  document.querySelectorAll('.align-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.align-btn').forEach(b=>b.classList.remove('tab-active'));
+      btn.classList.add('tab-active');
+      state.align = btn.dataset.align;
+      drawCanvas();
+    });
+  });
+
+  document.querySelectorAll('.preset-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      state.colorA = btn.dataset.a; state.colorB = btn.dataset.b; state.colorC = btn.dataset.c;
+      $('colorA').value = state.colorA; $('colorB').value = state.colorB; $('colorC').value = state.colorC;
+      drawCanvas();
+    });
+  });
+
+  $('cycleToggle').addEventListener('change', e=>{ state.cycling = e.target.checked; });
+
+  let hueShift = 0;
+  function ambientCycle(){
+    if(state.cycling){
+      hueShift = (hueShift+0.3)%360;
+      const [r,g,b] = hexToRgb(state.colorA);
+      // gentle hue rotate via HSL nudge on colorA only, kept subtle
+      const hsl = rgbToHsl(r,g,b);
+      const nc = hslToHex((hsl[0]+0.15)%360, hsl[1], hsl[2]);
+      state.colorA = nc;
+      drawCanvas();
+    }
+    requestAnimationFrame(ambientCycle);
+  }
+  function rgbToHsl(r,g,b){
+    r/=255; g/=255; b/=255;
+    const max=Math.max(r,g,b), min=Math.min(r,g,b);
+    let h,s,l=(max+min)/2;
+    if(max===min){ h=s=0; }
+    else{
+      const d=max-min;
+      s = l>0.5 ? d/(2-max-min) : d/(max+min);
+      switch(max){
+        case r: h=(g-b)/d+(g<b?6:0); break;
+        case g: h=(b-r)/d+2; break;
+        case b: h=(r-g)/d+4; break;
+      }
+      h*=60;
+    }
+    return [h,s,l];
+  }
+  function hslToHex(h,s,l){
+    h/=360;
+    let r,g,b;
+    if(s===0){ r=g=b=l; }
+    else{
+      const hue2rgb=(p,q,t)=>{
+        if(t<0)t+=1; if(t>1)t-=1;
+        if(t<1/6) return p+(q-p)*6*t;
+        if(t<1/2) return q;
+        if(t<2/3) return p+(q-p)*(2/3-t)*6;
+        return p;
+      };
+      const q = l<0.5 ? l*(1+s) : l+s-l*s;
+      const p = 2*l-q;
+      r=hue2rgb(p,q,h+1/3); g=hue2rgb(p,q,h); b=hue2rgb(p,q,h-1/3);
+    }
+    const toHex=v=>Math.round(v*255).toString(16).padStart(2,'0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+  ambientCycle();
+
+  /* ---------------- DOWNLOAD / SHARE ---------------- */
+  $('downloadBtn').addEventListener('click', ()=>{
+    const link = document.createElement('a');
+    link.download = 'aura-'+Date.now()+'.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+
+  $('shareBtn').addEventListener('click', async ()=>{
+    canvas.toBlob(async (blob)=>{
+      const msg = $('shareMsg');
+      try{
+        if(navigator.share && navigator.canShare && navigator.canShare({files:[new File([blob],'aura.png',{type:'image/png'})]})){
+          await navigator.share({
+            files:[new File([blob],'aura.png',{type:'image/png'})],
+            title:'My Aura',
+            text: state.text
+          });
+        } else {
+          await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+          msg.textContent = 'Copied image to clipboard';
+          setTimeout(()=>msg.textContent='', 2500);
+        }
+      } catch(err){
+        msg.textContent = 'Sharing not available — use Download instead';
+        setTimeout(()=>msg.textContent='', 3000);
+      }
+    }, 'image/png');
+  });
+
+  /* ---------------- QUOTE WIDGET ---------------- */
+  const quotes = [
+    ["Stillness is where the good ideas wait.","Aura"],
+    ["Let the morning be slow and the mind be soft.","Aura"],
+    ["You are allowed to rest before you are tired.","Aura"],
+    ["Small light, kept steady, outlasts a large one kept careless.","Aura"],
+    ["The quiet hours are not empty — they are unfilled on purpose.","Aura"],
+    ["Make room before you make plans.","Aura"],
+    ["A calm mind hears more than a busy one.","Aura"],
+    ["Begin gently. Momentum will catch up.","Aura"],
+    ["What you repeat, you become.","Aura"],
+    ["Not every hour needs a purpose. Some just need presence.","Aura"],
+    ["Choose the pace that lets you notice things.","Aura"],
+    ["Warm light forgives a lot.","Aura"],
+  ];
+  let lastQuoteIdx = -1;
+  function newQuote(){
+    let idx;
+    do{ idx = Math.floor(Math.random()*quotes.length); } while(idx===lastQuoteIdx && quotes.length>1);
+    lastQuoteIdx = idx;
+    const [q,a] = quotes[idx];
+    $('quoteText').textContent = `"${q}"`;
+    $('quoteAuthor').textContent = `— ${a}`;
+    return q;
+  }
+  $('refreshQuote').addEventListener('click', newQuote);
+  $('useQuote').addEventListener('click', ()=>{
+    const t = $('quoteText').textContent.replace(/^"|"$/g,'');
+    state.text = t;
+    $('quoteInput').value = t;
+    drawCanvas();
+  });
+
+  /* ---------------- PARTICLES ---------------- */
+  const pCanvas = document.getElementById('particleLayer');
+  const pctx = pCanvas.getContext('2d');
+  let particles = [];
+  let particlesOn = true;
+
+  function sizeParticleCanvas(){
+    pCanvas.width = window.innerWidth;
+    pCanvas.height = window.innerHeight;
+  }
+
+  function makeParticles(){
+    const count = Math.min(70, Math.floor(window.innerWidth/22));
+    particles = Array.from({length:count}, ()=>({
+      x: Math.random()*pCanvas.width,
+      y: Math.random()*pCanvas.height,
+      r: Math.random()*2.4+0.6,
+      vy: Math.random()*0.25+0.05,
+      vx: (Math.random()-0.5)*0.15,
+      a: Math.random()*0.5+0.15,
+      hue: Math.random()
+    }));
+  }
+
+  function particleColor(t){
+    const cols = [state.colorA, state.colorB, state.colorC];
+    const idx = Math.floor(t*cols.length)%cols.length;
+    return cols[idx];
+  }
+
+  function drawParticles(){
+    pctx.clearRect(0,0,pCanvas.width,pCanvas.height);
+    if(particlesOn){
+      particles.forEach(p=>{
+        p.y -= p.vy;
+        p.x += p.vx;
+        if(p.y < -10) p.y = pCanvas.height+10;
+        if(p.x < -10) p.x = pCanvas.width+10;
+        if(p.x > pCanvas.width+10) p.x = -10;
+        pctx.beginPath();
+        pctx.fillStyle = particleColor(p.hue);
+        pctx.globalAlpha = p.a;
+        pctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        pctx.fill();
+      });
+      pctx.globalAlpha = 1;
+    }
+    requestAnimationFrame(drawParticles);
+  }
+
+  $('particleToggle').addEventListener('click', ()=>{
+    particlesOn = !particlesOn;
+    $('particleState').textContent = particlesOn ? 'On' : 'Off';
+    if(!particlesOn) pctx.clearRect(0,0,pCanvas.width,pCanvas.height);
+  });
+
+  window.addEventListener('resize', ()=>{
+    sizeParticleCanvas();
+    makeParticles();
+    resizeCanvas();
+  });
+
+  /* ---------------- INIT ---------------- */
+  sizeParticleCanvas();
+  makeParticles();
+  drawParticles();
+  resizeCanvas();
+  newQuote();
+})();
+</script>
+</body>
+</html>
